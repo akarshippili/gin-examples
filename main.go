@@ -29,6 +29,21 @@ func main() {
 		})
 	})
 
+	authRouter := r.Group("/auth", gin.BasicAuth(gin.Accounts{
+		"akarsh": "ippili",
+		"mike":   "ross",
+		"harvey": "specter",
+	}))
+
+	authRouter.GET("/ping", func(ctx *gin.Context) {
+		log.Default().Println(ctx.Request)
+		// get user, it was set by the BasicAuth middleware
+		user := ctx.MustGet(gin.AuthUserKey).(string)
+		ctx.IndentedJSON(200, gin.H{
+			"message": "Hey! " + user,
+		})
+	})
+
 	err := r.Run("localhost:2620")
 	if err != nil {
 		log.Fatal(err.Error())
