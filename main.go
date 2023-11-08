@@ -9,6 +9,7 @@ import (
 
 func main() {
 	r := gin.Default()
+	r.LoadHTMLGlob("templates/*")
 
 	// adding a middleware
 	r.Use(func(ctx *gin.Context) {
@@ -41,6 +42,23 @@ func main() {
 		user := ctx.MustGet(gin.AuthUserKey).(string)
 		ctx.IndentedJSON(200, gin.H{
 			"message": "Hey! " + user,
+		})
+	})
+
+	authRouter.GET("/index", func(ctx *gin.Context) {
+		log.Default().Println(ctx.Request)
+		ctx.HTML(200, "form.html", nil)
+	})
+
+	authRouter.POST("/profile", func(ctx *gin.Context) {
+		file, err := ctx.FormFile("file")
+		if err != nil {
+			ctx.Error(err)
+		}
+
+		ctx.SaveUploadedFile(file, "./data/"+file.Filename)
+		ctx.JSON(201, gin.H{
+			"message": "accepted",
 		})
 	})
 
