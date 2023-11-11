@@ -4,10 +4,14 @@ import (
 	"log"
 	"net/url"
 
+	"github.com/akarshippili/gin-examples/env"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	config := env.GetConfig()
+	log.Default().Printf("application config : %v \n", config)
+
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
 
