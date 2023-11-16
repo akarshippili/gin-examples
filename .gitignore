@@ -1,2 +1,8 @@
 .idea/
 data/
+.aws
+.vscode
+fs/*
+!/fs/main.go
+application-*.json
+*.mod
