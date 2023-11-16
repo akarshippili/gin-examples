@@ -14,13 +14,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-// S3GetObjectAclAPI defines the interface for the GetObjectAcl function.
+// S3GetObjectAPI defines the interface for the GetObject function.
 // We use this interface to test the function using a mocked service.
-type S3GetObjectAclAPI interface {
+type S3GetObjectAPI interface {
 	GetObject(ctx context.Context, params *s3.GetObjectInput, optFns ...func(*s3.Options)) (*s3.GetObjectOutput, error)
 }
 
-// / FindObjectAcl gets the access control list (ACL) for an Amazon Simple Storage Service (Amazon S3) bucket object Inputs:
+// / GetObject gets the access control list (ACL) for an Amazon Simple Storage Service (Amazon S3) bucket object Inputs:
 //
 //	c is the context of the method call, which includes the AWS Region
 //	api is the interface that defines the method call
@@ -28,9 +28,9 @@ type S3GetObjectAclAPI interface {
 //
 // Output:
 //
-//	If success, a GetObjectAclOutput object containing the result of the service call and nil
-//	Otherwise, nil and an error from the call to GetObjectAcl
-func GetObject(c context.Context, api S3GetObjectAclAPI, input *s3.GetObjectInput) (*s3.GetObjectOutput, error) {
+//	If success, a GetObjectOutput object containing the result of the service call and nil
+//	Otherwise, nil and an error from the call to GetObject
+func GetObject(c context.Context, api S3GetObjectAPI, input *s3.GetObjectInput) (*s3.GetObjectOutput, error) {
 	return api.GetObject(c, input)
 }
 
@@ -56,12 +56,9 @@ func createObjectFrom(key string, reader io.ReadCloser) {
 		fmt.Println(err)
 		return
 	}
-
-	// Close the file.
-	file.Close()
 }
 
-// TODO: 
+// TODO:
 func GetListOfBuckets() []string {
 	arr := make([]string, 0)
 
