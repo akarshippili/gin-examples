@@ -1,0 +1,63 @@
+<style>
+    /* table, th, td {
+      border:1px solid black;
+    } */
+
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f1f1f1;
+    margin: 20px;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f2f2f2;
+  }
+
+  tr:hover {
+    background-color: #f5f5f5;
+  }
+
+  .folder {
+    color: #0078d4;
+  }
+
+  .file {
+    color: #2b5797;
+  }
+</style>
+
+
+
+<table>
+    <tr>
+      <th>Key</th>
+      <th>LastModified</th>
+      <th>Owner</th>
+      <th>Size</th>
+      <th>StorageClass</th>
+    </tr>
+    {{range .objects}}
+      <tr>
+        <!-- loop body -->
+        <td class="file">File</td>
+        <td>{{.Key}}</td>
+        <td>{{.LastModified}}</div>
+        <td>{{.Owner}}</div>
+        <td>{{.Size}}</div>
+        <td>{{.StorageClass}}</div>
+      <tr>
+    {{end}}
+</table>
