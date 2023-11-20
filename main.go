@@ -3,11 +3,9 @@ package main
 import (
 	"context"
 	"log"
-	"net/http"
 	"net/url"
 
-	"github.com/akarshippili/gin-examples/fs"
-	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/akarshippili/gin-examples/router"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gin-gonic/gin"
@@ -57,56 +55,11 @@ func main() {
 		"harvey": "specter",
 	}))
 
-	authRouter.GET("/ping", func(ctx *gin.Context) {
-		log.Default().Println(ctx.Request)
-		// get user, it was set by the BasicAuth middleware
-		user := ctx.MustGet(gin.AuthUserKey).(string)
-		ctx.IndentedJSON(200, gin.H{
-			"message": "Hey! " + user,
-		})
-	})
-
-	authRouter.GET("/index", func(ctx *gin.Context) {
-		log.Default().Println(ctx.Request)
-		ctx.HTML(200, "form.html", nil)
-	})
-
-	authRouter.POST("/profile", func(ctx *gin.Context) {
-		file, err := ctx.FormFile("file")
-		if err != nil {
-			ctx.Error(err)
-		}
-
-		ctx.SaveUploadedFile(file, "./data/"+file.Filename)
-		ctx.JSON(201, gin.H{
-			"message": "accepted",
-		})
-	})
-
-	authRouter.GET("/buckets", func(ctx *gin.Context) {
-		listBucketsOutput, err := fs.GetBuckets(context.TODO(), client, nil)
-		log.Default().Printf("buckets %v \n", listBucketsOutput)
-		if err != nil {
-			ctx.Error(err)
-			return
-		}
-
-		ctx.HTML(http.StatusOK, "buckets.html", gin.H{"buckets": listBucketsOutput.Buckets})
-	})
-
-	authRouter.GET("/buckets/:bucketid", func(ctx *gin.Context) {
-		bucketid := ctx.Param("bucketid")
-		log.Default().Printf("listing objects in bucket %s", bucketid)
-
-		listObjectsV2Output, err := fs.GetBucketObjects(context.TODO(), client, &s3.ListObjectsV2Input{
-			Bucket: aws.String(bucketid),
-		})
-		if err != nil {
-			ctx.Error(err)
-		}
-
-		ctx.HTML(http.StatusOK, "objects.html", gin.H{"objects": listObjectsV2Output.Contents})
-	})
+	authRouter.GET("/ping", router.Ping)
+	authRouter.GET("/index", router.Index)
+	authRouter.POST("/profile", router.Profile)
+	authRouter.GET("/buckets", router.Buckets(client))
+	authRouter.GET("/buckets/:bucketid", router.Objects(client))
 
 	err = r.Run("localhost:2620")
 	if err != nil {
