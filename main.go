@@ -1,16 +1,33 @@
 package main
 
 import (
+	"context"
 	"log"
+	"net/http"
 	"net/url"
 
-	"github.com/akarshippili/gin-examples/env"
+	"github.com/akarshippili/gin-examples/fs"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	config := env.GetConfig()
-	log.Default().Printf("application config : %v \n", config)
+	// Load the Shared AWS Configuration (~/.aws/config)
+	cfg, err := config.LoadDefaultConfig(
+		context.TODO(),
+		config.WithSharedCredentialsFiles([]string{".aws/credentials"}),
+		config.WithSharedConfigFiles([]string{".aws/config"}),
+		config.WithLogConfigurationWarnings(true),
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Create an Amazon S3 service client
+	client := s3.NewFromConfig(cfg)
 
 	r := gin.Default()
 	r.LoadHTMLGlob("templates/*")
@@ -66,7 +83,32 @@ func main() {
 		})
 	})
 
-	err := r.Run("localhost:2620")
+	authRouter.GET("/buckets", func(ctx *gin.Context) {
+		listBucketsOutput, err := fs.GetBuckets(context.TODO(), client, nil)
+		log.Default().Printf("buckets %v \n", listBucketsOutput)
+		if err != nil {
+			ctx.Error(err)
+			return
+		}
+
+		ctx.HTML(http.StatusOK, "buckets.html", gin.H{"buckets": listBucketsOutput.Buckets})
+	})
+
+	authRouter.GET("/buckets/:bucketid", func(ctx *gin.Context) {
+		bucketid := ctx.Param("bucketid")
+		log.Default().Printf("listing objects in bucket %s", bucketid)
+
+		listObjectsV2Output, err := fs.GetBucketObjects(context.TODO(), client, &s3.ListObjectsV2Input{
+			Bucket: aws.String(bucketid),
+		})
+		if err != nil {
+			ctx.Error(err)
+		}
+
+		ctx.HTML(http.StatusOK, "objects.html", gin.H{"objects": listObjectsV2Output.Contents})
+	})
+
+	err = r.Run("localhost:2620")
 	if err != nil {
 		log.Fatal(err.Error())
 	}

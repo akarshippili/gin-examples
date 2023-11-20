@@ -1,18 +1,23 @@
-package main
+package fs
 
 import (
 	"context"
 	"flag"
 	"fmt"
-	"io"
 	"log"
-	"os"
-	"path/filepath"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
+
+type S3GetBucketObjectsAPI interface {
+	ListObjectsV2(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error)
+}
+
+func GetBucketObjects(c context.Context, api S3GetBucketObjectsAPI, input *s3.ListObjectsV2Input) (*s3.ListObjectsV2Output, error) {
+	return api.ListObjectsV2(c, input)
+}
 
 // S3GetObjectAPI defines the interface for the GetObject function.
 // We use this interface to test the function using a mocked service.
@@ -34,38 +39,15 @@ func GetObject(c context.Context, api S3GetObjectAPI, input *s3.GetObjectInput) 
 	return api.GetObject(c, input)
 }
 
-func createObjectFrom(key string, reader io.ReadCloser) {
-	defer reader.Close()
-
-	err := os.MkdirAll(filepath.Dir(key), 0770)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	file, err := os.Create(key)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer file.Close()
-
-	// Write the data from the reader to the file.
-	_, err = io.Copy(file, reader)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+type S3GetbucktesAPI interface {
+	ListBuckets(ctx context.Context, params *s3.ListBucketsInput, optFns ...func(*s3.Options)) (*s3.ListBucketsOutput, error)
 }
 
-// TODO:
-func GetListOfBuckets() []string {
-	arr := make([]string, 0)
-
-	return arr
+func GetBuckets(c context.Context, api S3GetbucktesAPI, input *s3.ListBucketsInput) (*s3.ListBucketsOutput, error) {
+	return api.ListBuckets(c, input)
 }
 
-func main() {
+func Test() {
 
 	bucket := flag.String("b", "", "The bucket containing the object")
 	objectName := flag.String("o", "", "The bucket object to get ACL from")
