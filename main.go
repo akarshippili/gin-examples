@@ -58,8 +58,9 @@ func main() {
 	authRouter.GET("/ping", router.Ping)
 	authRouter.GET("/index", router.Index)
 	authRouter.POST("/profile", router.Profile)
-	authRouter.GET("/buckets", router.Buckets(client))
-	authRouter.GET("/buckets/:bucketid", router.Objects(client))
+	authRouter.GET("/buckets", router.GetBuckets(client))
+	authRouter.GET("/buckets/:bucketid", router.GetBucketObjects(client))
+	authRouter.GET("/buckets/:bucketid/objects/*objectid", router.GetObject(client))
 
 	err = r.Run("localhost:2620")
 	if err != nil {

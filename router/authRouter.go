@@ -2,8 +2,10 @@ package router
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/akarshippili/gin-examples/fs"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -37,7 +39,7 @@ func Profile(ctx *gin.Context) {
 	})
 }
 
-func Buckets(client fs.S3GetbucktesAPI) func(ctx *gin.Context) {
+func GetBuckets(client fs.S3GetbucktesAPI) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		listBucketsOutput, err := fs.GetBuckets(context.TODO(), client, nil)
 		log.Default().Printf("buckets %v \n", listBucketsOutput)
@@ -50,7 +52,7 @@ func Buckets(client fs.S3GetbucktesAPI) func(ctx *gin.Context) {
 	}
 }
 
-func Objects(client fs.S3GetBucketObjectsAPI) func(ctx *gin.Context) {
+func GetBucketObjects(client fs.S3GetBucketObjectsAPI) func(ctx *gin.Context) {
 
 	return func(ctx *gin.Context) {
 		bucketid := ctx.Param("bucketid")
@@ -64,5 +66,49 @@ func Objects(client fs.S3GetBucketObjectsAPI) func(ctx *gin.Context) {
 		}
 
 		ctx.HTML(http.StatusOK, "objects.html", gin.H{"objects": listObjectsV2Output.Contents})
+	}
+}
+
+func GetObject(client fs.S3GetObjectAPI) func(ctx *gin.Context) {
+
+	return func(ctx *gin.Context) {
+		bucketid := ctx.Param("bucketid")
+		objectid := ctx.Param("objectid")[1:]
+		log.Default().Printf("accessing object \"%s\" in bucket \"%s\"", objectid, bucketid)
+
+		objectOutput, err := fs.GetObject(
+			context.TODO(),
+			client,
+			&s3.GetObjectInput{
+				Bucket: aws.String(bucketid),
+				Key:    aws.String(objectid),
+			},
+		)
+		if err != nil {
+			ctx.Error(err)
+			return
+		}
+
+		// case 1:
+		// bytes, err := fs.GetBytes(objectOutput.Body)
+		// if err != nil {
+		// 	ctx.Error(err)
+		// 	return
+		// }
+
+		// ctx.Data(http.StatusOK, "application/octet-stream", bytes)
+
+		// case 2:
+		// ctx.DataFromReader(http.StatusOK, objectOutput.ContentLength, "application/octet-stream", objectOutput.Body, nil)
+
+		// case 3:
+		// ctx.DataFromReader(http.StatusOK, objectOutput.ContentLength, *objectOutput.ContentType, objectOutput.Body, nil)
+
+		// // case 4:
+		splits := strings.Split(objectid, "/")
+		filename := splits[len(splits)-1]
+		additionalHeaders := make(map[string]string)
+		additionalHeaders["Content-Disposition"] = fmt.Sprintf(`attachment; filename="%s"`, filename)
+		ctx.DataFromReader(http.StatusOK, objectOutput.ContentLength, *objectOutput.ContentType, objectOutput.Body, additionalHeaders)
 	}
 }
