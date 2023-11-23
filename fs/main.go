@@ -47,6 +47,14 @@ func GetBuckets(c context.Context, api S3GetbucktesAPI, input *s3.ListBucketsInp
 	return api.ListBuckets(c, input)
 }
 
+type S3PostObjectAPI interface {
+	PutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error)
+}
+
+func PostObject(c context.Context, api S3PostObjectAPI, input *s3.PutObjectInput) (*s3.PutObjectOutput, error) {
+	return api.PutObject(c, input)
+}
+
 func Test() {
 
 	bucket := flag.String("b", "", "The bucket containing the object")

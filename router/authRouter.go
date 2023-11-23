@@ -112,3 +112,41 @@ func GetObject(client fs.S3GetObjectAPI) func(ctx *gin.Context) {
 		ctx.DataFromReader(http.StatusOK, objectOutput.ContentLength, *objectOutput.ContentType, objectOutput.Body, additionalHeaders)
 	}
 }
+
+func PostObject(client fs.S3PostObjectAPI) func(ctx *gin.Context) {
+
+	return func(ctx *gin.Context) {
+		bucketid := ctx.Param("bucketid")
+
+		fileHeader, err := ctx.FormFile("file")
+		if err != nil {
+			ctx.Error(err)
+			return
+		}
+
+		file, err := fileHeader.Open()
+		if err != nil {
+			ctx.Error(err)
+			return
+		}
+		defer file.Close()
+
+		objectOutput, err := fs.PostObject(
+			context.TODO(),
+			client,
+			&s3.PutObjectInput{
+				Bucket:           &bucketid,
+				Key:              &fileHeader.Filename,
+				Body:             file,
+				BucketKeyEnabled: true,
+			},
+		)
+		if err != nil {
+			ctx.Error(err)
+			return
+		}
+
+		log.Default().Println(objectOutput)
+		ctx.Status(http.StatusCreated)
+	}
+}

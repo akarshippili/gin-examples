@@ -61,6 +61,7 @@ func main() {
 	authRouter.GET("/buckets", router.GetBuckets(client))
 	authRouter.GET("/buckets/:bucketid", router.GetBucketObjects(client))
 	authRouter.GET("/buckets/:bucketid/objects/*objectid", router.GetObject(client))
+	authRouter.POST("/buckets/:bucketid/objects", router.PostObject(client))
 
 	err = r.Run("localhost:2620")
 	if err != nil {

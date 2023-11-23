@@ -65,6 +65,14 @@
         })
         .catch(error => console.error('Error downloading file:', error))
   }
+
+
+  function handleSubmit() {
+    var action_src = window.location.href + "/objects"
+    var form = document.getElementById('upload_form');
+    form.action = action_src;
+    form.enctype = "multipart/form-data";
+  }
 </script>
 
 
@@ -89,3 +97,11 @@
       <tr>
     {{end}}
 </table>
+
+<br>
+
+<form method="post" enctype="multipart/form-data" id="upload_form" onSubmit="handleSubmit()">
+  <label for="file">Upload: </label>
+  <input type="file" name="file" id="file">
+  <input type="submit" value="Submit">
+</form>
