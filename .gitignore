@@ -6,3 +6,5 @@ fs/*
 !/fs/main.go
 application-*.json
 *.mod
+
+docker-compose.yml
