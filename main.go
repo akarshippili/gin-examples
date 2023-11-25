@@ -63,7 +63,7 @@ func main() {
 	authRouter.GET("/buckets/:bucketid/objects/*objectid", router.GetObject(client))
 	authRouter.POST("/buckets/:bucketid/objects", router.PostObject(client))
 
-	err = r.Run("localhost:2620")
+	err = r.Run("0.0.0.0:2620")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
