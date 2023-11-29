@@ -63,7 +63,7 @@ func main() {
 	authRouter.GET("/buckets/:bucketid/objects/*objectid", router.GetObject(client))
 	authRouter.POST("/buckets/:bucketid/objects", router.PostObject(client))
 
-	err = r.Run("0.0.0.0:2620")
+	err = r.RunTLS("0.0.0.0:2620", "../openssl/domain.crt", "../openssl/domain.key")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
