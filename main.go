@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/url"
 
+	"github.com/akarshippili/gin-examples/middlewares"
 	"github.com/akarshippili/gin-examples/router"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -43,6 +44,8 @@ func main() {
 		ctx.Next()
 	})
 
+	r.Use(middlewares.CORSMiddleware())
+
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
@@ -55,6 +58,12 @@ func main() {
 		"harvey": "specter",
 	}))
 
+	restRouter := r.Group("/rest", gin.BasicAuth(gin.Accounts{
+		"akarsh": "ippili",
+		"mike":   "ross",
+		"harvey": "specter",
+	}))
+
 	authRouter.GET("/ping", router.Ping)
 	authRouter.GET("/index", router.Index)
 	authRouter.POST("/profile", router.Profile)
@@ -62,6 +71,8 @@ func main() {
 	authRouter.GET("/buckets/:bucketid", router.GetBucketObjects(client))
 	authRouter.GET("/buckets/:bucketid/objects/*objectid", router.GetObject(client))
 	authRouter.POST("/buckets/:bucketid/objects", router.PostObject(client))
+
+	restRouter.GET("/buckets", router.GetBucketsJson(client))
 
 	err = r.Run("0.0.0.0:2620")
 	if err != nil {
